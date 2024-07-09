@@ -2,11 +2,18 @@
   "name": "image-gorilla-tool",
   "version": "1.0.0",
   "main": "index.js",
+  "scripts": {
+    "dev": "rm -rf output && node  index.js"
+  },
   "repository": "https://github.com/Matt-Ferraz/image-gorilla-tool.git",
   "author": "Mateus Ferraz <ferraz_dev@proton.me>",
   "license": "MIT",
   "engines": {
-      "node": "20.10.0",
-      "yarn": "1.22.21"
+    "node": "20.10.0",
+    "yarn": "1.22.21"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "sharp": "^0.33.4"
   }
 }

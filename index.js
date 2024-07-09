@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
 const crypto = require("crypto");
+const timeExecuted = Date.now()
 let memoryLogs = {}
 
 const inputImagePaths = [
@@ -21,11 +22,14 @@ const delayBetweenImages = 1500;
 
 function logMemoryUsage() {
     const memoryUsage = process.memoryUsage();
-    const logMessage = `- RSS: ${memoryUsage.rss / 1024 / 1024} MB`;
+    const logMessage = `- RSS: ${memoryUsage.rss.toFixed(2) / 1024 / 1024} MB `;
+    memoryLogs[Date.now()] = {memory: memoryUsage.rss.toFixed(2) / 1024 / 1024, time: Date.now()}
+
+    console.log(memoryLogs)
     // - Heap Total: ${memoryUsage.heapTotal / 1024 / 1024} MB
     // - Heap Used: ${memoryUsage.heapUsed / 1024 / 1024} MB
 
-    fs.appendFileSync("memory_logs.txt", logMessage + "\n");
+    fs.appendFileSync(`memory_logs-${timeExecuted}.logs`, logMessage + "\n");
 }
 
 async function downloadImage(url, outputPath) {

@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
 const crypto = require("crypto");
+let memoryLogs = {}
 
 const inputImagePaths = [
     "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/TEIDE.JPG/1920px-TEIDE.JPG",
@@ -18,6 +19,14 @@ const chunkSize = 1;
 const delayBetweenChunks = 2000;
 const delayBetweenImages = 1500;
 
+function logMemoryUsage() {
+    const memoryUsage = process.memoryUsage();
+    const logMessage = `- RSS: ${memoryUsage.rss / 1024 / 1024} MB`;
+    // - Heap Total: ${memoryUsage.heapTotal / 1024 / 1024} MB
+    // - Heap Used: ${memoryUsage.heapUsed / 1024 / 1024} MB
+
+    fs.appendFileSync("memory_logs.txt", logMessage + "\n");
+}
 
 async function downloadImage(url, outputPath) {
     const response = await axios({
@@ -83,12 +92,19 @@ async function processImagesInChunks(imagePaths, chunkSize) {
         await Promise.all(chunk.map((inputPath) => processImage(inputPath)));
         if (i + chunkSize < imagePaths.length) {
             console.log(
-                `We chillin' ${delayBetweenChunks}ms`,
+                `We chillin' for ${delayBetweenChunks}ms`,
             );
             await delay(delayBetweenChunks);
         }
     }
 }
 
+function startMemoryLogging(interval) {
+    setInterval(() => {
+        logMemoryUsage();
+    }, interval);
+}
 
 processImagesInChunks(inputImagePaths, chunkSize);
+
+startMemoryLogging(1000);

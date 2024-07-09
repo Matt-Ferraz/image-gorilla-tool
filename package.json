@@ -1,0 +1,12 @@
+{
+  "name": "image-gorilla-tool",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/Matt-Ferraz/image-gorilla-tool.git",
+  "author": "Mateus Ferraz <ferraz_dev@proton.me>",
+  "license": "MIT",
+  "engines": {
+      "node": "20.10.0",
+      "yarn": "1.22.21"
+  }
+}

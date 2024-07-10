@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Usage Over Time</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+            fetch('http://localhost:8000/memory-dump-1720619031606.json', {
+                mode:"cors",
+                headers: {
+                    'Content-Type': "application/json"
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const rows = [];
+                    for (const key in data) {
+                        if (data.hasOwnProperty(key)) {
+                            const timestamp = new Date(parseInt(key));
+                            const memory = data[key].memory;
+                            rows.push([timestamp, memory]);
+                        }
+                    }
+                    rows.sort((a, b) => a[0] - b[0]);
+
+                    const dataTable = new google.visualization.DataTable();
+                    dataTable.addColumn('datetime', 'Timestamp');
+                    dataTable.addColumn('number', 'Memory (MB)');
+                    dataTable.addRows(rows);
+
+                    const options = {
+                        title: 'Memory Usage Over Time',
+                        curveType: 'function',
+                        legend: { position: 'bottom' },
+                        hAxis: {
+                            title: 'Timestamp'
+                        },
+                        vAxis: {
+                            title: 'Memory (MB)'
+                        }
+                    };
+
+                    const chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+                    chart.draw(dataTable, options);
+                })
+                .catch(error => console.error('Error fetching or parsing JSON:', error));
+        }
+    </script>
+</head>
+<body>
+    <h2>Memory Usage Over Time</h2>
+    <div id="curve_chart" style="width: 100%; height: 500px"></div>
+</body>
+</html>

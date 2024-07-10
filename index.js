@@ -5,12 +5,8 @@ const axios = require("axios");
 const crypto = require("crypto");
 const timeExecuted = Date.now()
 let memoryLogs = {}
-
-let inputImagePaths = [
-    // "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/TEIDE.JPG/1920px-TEIDE.JPG",
-    // "C:/Users/ferra/Documents/GitHub/a/image-gorilla-tool/test/0a0c1312be06.png",
-    // "C:/Users/ferra/Documents/GitHub/a/image-gorilla-tool/test/0bbb78f96f46.png"
-];
+let num = 0;
+let inputImagePaths = [];
 
 const outputDir = "output";
 if (!fs.existsSync(outputDir)) {
@@ -35,11 +31,7 @@ function writeFileLog() {
 function logMemoryUsage() {
     const memoryUsage = process.memoryUsage();
     const logMessage = `RAM: ${memoryUsage.rss.toFixed(2) / 1024 / 1024} MB `;
-    memoryLogs[parseInt(Date.now())] = {memory: memoryUsage.rss.toFixed(2) / 1024 / 1024, time: Date.now(), memory_magnitude: "mb"}
-
-    // console.log(logMessage)
-
-    // fs.appendFileSync(`memory_logs-${timeExecuted}.logs`, logMessage + "\n");
+    memoryLogs[parseInt(Date.now())] = {memory: memoryUsage.rss.toFixed(2) / 1024 / 1024, time: new Date(), memory_magnitude: "mb"}
 }
 
 async function downloadImage(url, outputPath) {
@@ -52,7 +44,6 @@ async function downloadImage(url, outputPath) {
         const writer = fs.createWriteStream(outputPath);
         response.data.pipe(writer);
         writer.on("finish", async () => {
-            // const stats = fs.statSync(outputPath);
             setTimeout(resolve, delayBetweenImages);
         });
         writer.on("error", reject);
@@ -61,15 +52,10 @@ async function downloadImage(url, outputPath) {
 
 async function resizeImage(inputPath, size, outputPath) {
     try {
-        // const originalStats = fs.statSync(inputPath);
         await sharp(inputPath)
             .resize(size, size)
-            .png({ quality: 80, compressionLevel: 9 })
+            .png({ quality: 80, compressionLevel: 6 })
             .toFile(outputPath);
-        // const resizedStats = fs.statSync(outputPath);
-        // console.log(
-        //     `Resized image size: ${size}x${size} ${resizedStats.size / 1000} KB`,
-        // );
     } catch (error) {
         console.error(`Error resizing image to ${size}x${size}:`, error);
     }
@@ -91,9 +77,9 @@ async function processImage(inputPath) {
             `${path.basename(tempImagePath, path.extname(tempImagePath))}_${size}x${size}.png`,
         );
         await resizeImage(tempImagePath, size, outputImagePath);
+        num++
+        console.log("foram", num)
     }
-
-    // fs.unlinkSync(tempImagePath);
 }
 
 function delay(ms) {
@@ -123,26 +109,21 @@ function startMemoryLogging(interval) {
         logMemoryUsage();
     }, interval);
 }
-// processImagesInChunks(inputImagePaths, chunkSize);
+
 
 startMemoryLogging(10);
 
+const testFolder = './input-sample/';
 
-// process.on('exit', writeFileLog)
-const testFolder = './output/';
 fs.readdir(testFolder, (err, files) => {
-    console.log(files.length/5)
-    // files.forEach((file) => file[0])
+    for(let i = 0; i < files.length; i++){
+        if(files[i].split('.')[1] != "png"){
+            delete files[i]
+        } else files[i] = ('./input-sample/' + files[i])//.split("\\").join("/")
+    }
 
-    // // windows requires this to work
-    // for(let i = 0; i < files.length; i++){
-    //     files[i] = (__dirname + '/test/' + files[i]).split("\\").join("/")
-    // }
-    // // console.log(files, files[0], files.length, typeof files, typeof files[0])
-    // inputImagePaths = files
+    inputImagePaths = files
+    chunkSize = 400
 
-    // chunkSize = 500
-    // // console.log(inputImagePaths)
-    // processImagesInChunks(inputImagePaths, chunkSize);
-
+    processImagesInChunks(inputImagePaths, chunkSize);
 });
